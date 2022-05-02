@@ -1,0 +1,17 @@
+@(userForm: Form[forms.UserForm])(implicit request: Http.Request, messages: play.i18n.Messages)
+@import helper._
+
+
+
+@main("Sign") {
+
+    @helper.form(action = routes.HomeController.signup()) {
+        @helper.CSRF.formField
+        @helper.inputText(userForm("user"))
+        @helper.inputPassword(userForm("password"))
+        <button type="submit">Create widget</button>
+    }
+
+
+
+}

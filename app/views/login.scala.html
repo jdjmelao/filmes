@@ -1,0 +1,33 @@
+@import helper._
+@(userForm: Form[forms.UserForm])(implicit request: Http.Request, messages: play.i18n.Messages)
+
+@main("Login") {
+
+
+    @request.flash.asScala().get("fail").map { failFlashValue =>
+    <div class="alert alert-warning" role="alert">
+        <strong>Fail!</strong> @failFlashValue
+    </div>
+    }
+
+    <form action="@controllers.routes.HomeController.log()" method="POST" id="userForm">
+        @helper.CSRF.formField(request.asScala)
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <input name="user" type="text">Username</input>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <input name="password" type="password">Password</input>
+            </div>
+        </div>
+
+        <button type="submit">Login</button>
+        <label>
+            <input type="checkbox" checked="checked" name="remember"> Remember me
+        </label>
+
+        <span class="create"><a href="/signup">Create account</a></span>
+    </form>
+}
