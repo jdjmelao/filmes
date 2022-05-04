@@ -1,22 +1,28 @@
 package controllers;
 
+import auxiliar.Auxiliar;
+import models.Episode;
+import models.Records;
+import models.Season;
 import models.User;
 import forms.UserForm;
-import play.mvc.*;
 import play.data.Form;
 import play.data.FormFactory;
 import play.i18n.MessagesApi;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.mvc.Results;
 import play.libs.concurrent.HttpExecutionContext;
-import views.html.helper.form;
+import scala.collection.immutable.Seq;
+import views.html.index;
 
 import javax.inject.Inject;
-import javax.persistence.PersistenceException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import static play.libs.Scala.asScala;
 
 /**
  * This controller contains an action to handle HTTP requests
@@ -24,24 +30,19 @@ import java.util.concurrent.CompletionStage;
  */
 public class HomeController extends Controller {
 
-    private final FormFactory formFactory;
+    private FormFactory formFactory;
 
-    private final Form<UserForm> userForm;
-
-    private final HttpExecutionContext httpExecutionContext;
+    @Inject
+    private HttpExecutionContext httpExecutionContext;
 
     @Inject
     private MessagesApi messagesApi;
 
     @Inject
-    public HomeController(FormFactory formFactory,
-                          HttpExecutionContext httpExecutionContext,
-                          MessagesApi messagesApi) {
+    public HomeController(FormFactory formFactory) {
         this.formFactory = formFactory;
-        this.httpExecutionContext = httpExecutionContext;
-        this.messagesApi = messagesApi;
-        this.userForm = formFactory.form(UserForm.class);
     }
+
 
 
     /**
@@ -51,24 +52,61 @@ public class HomeController extends Controller {
      * <code>GET</code> request with a path of <code>/</code>.
      */
     public Result index(Http.Request request) {
-        String title = this.messagesApi.preferred(request).at("index.title");
+        List<Auxiliar> eps = new ArrayList<>();
+        try {
+            String username = String.valueOf(request.session().get("connected")).replace("Optional[", "").replace("]", "");
+            System.out.println(username);
+            User userObject = User.checkUser(username).get(0);
+            Integer userId = userObject.getId();
+            List<Records> records = Records.getRecords(userId);
+            for (Records r: records){
+                Episode ep = Episode.checkEp(r.getEpisodeId()).get(0);
+                Season season = Season.checkSeason(ep.getSeasonId()).get(0);
+                System.out.println("Ei");
+                Auxiliar aux = new Auxiliar("Narcos", season.getSeasonNumber(), ep.getEp_number(), ep.getName());
+                eps.add(aux);
+            }
+        }
+        catch(Exception e){
+            System.out.println("Not logged");
+        }
 
-        return ok(views.html.index.render(title));
+        return request
+                .session()
+                .get("connected")
+                .map(user -> ok(index.render(asScala(eps), "Hello " + user, request, messagesApi.preferred(request))))
+                .orElse(redirect(routes.HomeController.login()));
     }
 
-    public Result login(Http.Request request) { return ok(views.html.login.render(userForm, request, messagesApi.preferred(request))); }
+    public Result login(Http.Request request) {
+        return request
+                .session()
+                .get("connected")
+                .map(user -> redirect(controllers.routes.HomeController.index()))
+                .orElse(ok(views.html.login.render(this.formFactory.form(UserForm.class), request, messagesApi.preferred(request))));
+    }
 
-    public Result sign(Http.Request request) { return ok(views.html.signup.render(userForm, request, messagesApi.preferred(request))); }
+    public Result sign(Http.Request request) {
+        return request
+                .session()
+                .get("connected")
+                .map(user -> redirect(controllers.routes.HomeController.index()))
+                .orElse(ok(views.html.signup.render(this.formFactory.form(UserForm.class), request, messagesApi.preferred(request))));
+    }
+
+
+    public Result logout(Http.Request request){
+        return redirect(controllers.routes.HomeController.login()).withNewSession();
+    }
 
 
     public Result log(Http.Request request) {
-        //Está errada, é necessário validar informação e não guarda-la
-        Form<UserForm> form = userForm.bindFromRequest(request);
+        Form<UserForm> form = this.formFactory.form(UserForm.class).bindFromRequest(request);
         UserForm userFormData = form.get();
-        System.out.println(userFormData.user);
-        List<User> userExist = User.checkUser(userFormData.user, userFormData.password);
+        List<User> userExist = User.checkUserPass(userFormData.getUser(), userFormData.getPassword());
         if(userExist.size() == 1){
-            return redirect(controllers.routes.HomeController.index());
+            return redirect(controllers.routes.HomeController.index())
+                    .addingToSession(request, "connected", userFormData.getUser());
         }
         else {
             return redirect(controllers.routes.HomeController.login())
@@ -77,15 +115,20 @@ public class HomeController extends Controller {
     }
 
     public Result signup(Http.Request request) {
-        Form<UserForm> form = userForm.bindFromRequest(request);
+        Form<UserForm> form = this.formFactory.form(UserForm.class).bindFromRequest(request);
         UserForm userFormData = form.get();
+        List<User> userExist = User.checkUser(userFormData.getUser());
+        System.out.println(userExist.size());
+        if (userExist.size() >= 1) {
+            return redirect(controllers.routes.HomeController.signup())
+                    .flashing("fail", "User Already Exist");
+        }
         User user = new User();
-        user.setUser(userFormData.user);
-        user.setPassword(userFormData.password);
-        System.out.println(userFormData.user);
-        System.out.println(userFormData.password);
+        user.setUser(userFormData.getUser());
+        user.setPassword(userFormData.getPassword());
         user.save();
-        return redirect(controllers.routes.HomeController.index());
+        return redirect(controllers.routes.HomeController.index())
+                .addingToSession(request, "connected", user.getUser());
     }
 
 }

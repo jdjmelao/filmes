@@ -23,8 +23,14 @@ public class User extends Model {
 
     public static final Finder<Integer, User> finder = new Finder<Integer, User>(User.class);
 
-    public static List<User> checkUser(String user, String password){
+    public static List<User> checkUserPass(String user, String password){
         return finder.query().where().and(Expr.eq( "user", user ), Expr.eq("password", password)).findList();
+    }
+
+    public static List<User> checkUser(String user){
+        List<User> userE = finder.query().where(Expr.eq( "user", user )).findList();
+        System.out.println(userE);
+        return userE;
     }
 
     public Integer getId() {

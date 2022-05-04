@@ -6,6 +6,7 @@
 GET     /                           controllers.HomeController.index(request: Request)
 GET     /login                      controllers.HomeController.login(request: Request)
 GET     /signup                     controllers.HomeController.sign(request: Request)
+GET     /logout                     controllers.HomeController.logout(request: Request)
 
 
 POST    /login                      controllers.HomeController.log(request: Request)

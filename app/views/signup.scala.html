@@ -5,6 +5,12 @@
 
 @main("Sign") {
 
+    @request.flash.asScala().get("fail").map { failFlashValue =>
+        <div class="alert alert-warning" role="alert">
+            <strong>Fail!</strong> @failFlashValue
+        </div>
+    }
+
     @helper.form(action = routes.HomeController.signup()) {
         @helper.CSRF.formField
         @helper.inputText(userForm("user"))

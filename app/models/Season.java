@@ -1,10 +1,13 @@
 package models;
 
+import io.ebean.Expr;
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.List;
 
 @Entity
 public class Season extends Model {
@@ -25,6 +28,13 @@ public class Season extends Model {
     private String release_date;
 
     private int classification;
+
+    public static final Finder<Integer, Season> finder = new Finder<Integer, Season>(Season.class);
+
+    public static List<Season> checkSeason(Integer id){
+        List<Season> season = finder.query().where(Expr.eq( "id", id )).findList();
+        return season;
+    }
 
     public Integer getId() {
         return id;

@@ -1,0 +1,28 @@
+(implicit request: Http.Request, messages: play.i18n.Messages)
+@import helper._
+
+@main("List") {
+
+<table>
+    <thead>
+        <tr>
+            <th>Serie</th>
+            <th>Season Number</th>
+            <th>Episode Number</th>
+            <th>Episode Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    @for(a <- aux) {
+        <tr>
+            <td>@a.serieName</td>
+            <td>@a.seasonNumber</td>
+            <td>@a.episodeNumber</td>
+            <td>@a.episodeName</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+
+}

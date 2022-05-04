@@ -1,5 +1,27 @@
-@(title: String)
+@(aux: Seq[auxiliar.Auxiliar], title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
 
 @main(title) {
   <h1>@title</h1>
+  <span class="logout"><a href="/logout">Logout</a></span>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Serie</th>
+      <th>Season Number</th>
+      <th>Episode Number</th>
+      <th>Episode Name</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(a <- aux) {
+    <tr>
+      <td>@a.getSerieName()</td>
+      <td>@a.getSeasonNumber()</td>
+      <td>@a.getEpisodeNumber()</td>
+      <td>@a.getEpisodeName()</td>
+    </tr>
+    }
+    </tbody>
+  </table>
 }

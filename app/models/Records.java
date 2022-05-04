@@ -1,10 +1,13 @@
 package models;
 
+import io.ebean.Expr;
+import io.ebean.Finder;
 import io.ebean.Model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.List;
 
 @Entity
 public class Records extends Model {
@@ -19,6 +22,13 @@ public class Records extends Model {
     private Integer episodeId;
 
     private String watchedDate;
+
+    public static final Finder<Integer, Records> finder = new Finder<Integer, Records>(Records.class);
+
+    public static List<Records> getRecords(Integer id){
+        List<Records> records = finder.query().where(Expr.eq( "user_id", id )).findList();
+        return records;
+    }
 
     public Integer getId() {
         return id;
