@@ -4,10 +4,8 @@ import io.ebean.Expr;
 import io.ebean.Finder;
 import io.ebean.Model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.util.List;
+import javax.persistence.*;
+import java.util.*;
 
 @Entity
 public class Records extends Model {
@@ -15,20 +13,51 @@ public class Records extends Model {
     @Id
     private Integer id;
 
-    @Column(nullable = false)
-    private Integer userId;
+    @ManyToOne
+    private Episode episode;
 
-    @Column(nullable = false)
-    private Integer episodeId;
+    @ManyToOne
+    private User user;
 
-    private String watchedDate;
+    private Date watchedDate;
 
     public static final Finder<Integer, Records> finder = new Finder<Integer, Records>(Records.class);
 
     public static List<Records> getRecords(Integer id){
-        List<Records> records = finder.query().where(Expr.eq( "user_id", id )).findList();
+        List<Records> records = finder.query().where(Expr.eq( "user.id", id )).findList();
         return records;
     }
+
+    public static Records getRecord(Integer id, Integer episodeId){
+        Records record = finder.query().where().and(Expr.eq( "user.id", id ), Expr.eq( "episode.id", episodeId )).findOne();
+        return record;
+    }
+
+    public static Records getLastRecordsOfSerie(Integer id, Integer serieId){
+        return finder.query().where().and(Expr.eq( "user.id", id ), Expr.eq( "episode.season.serie.id", serieId )).orderBy("episode.season.seasonNumber desc, episode.ep_number desc").setMaxRows(1).findOne();
+    }
+
+    public static List<Records> getLastRecords(Integer id){
+        List<Records> result = new ArrayList<>();
+        List<Records> records = getRecords(id);
+        List<Integer> ids = new ArrayList<>();
+        for (Records r: records){
+            Integer serieId = r.getEpisode().getSeason().getSerie().getId();
+            ids.remove(serieId);
+            ids.add(serieId);
+        }
+
+        for (Integer i: ids){
+            Records record = getLastRecordsOfSerie(id, i);
+            result.add(record);
+        }
+
+        result.sort(Comparator.comparing(Records::getWatchedDate).reversed());
+
+        return result;
+    }
+
+
 
     public Integer getId() {
         return id;
@@ -38,27 +67,27 @@ public class Records extends Model {
         this.id = id;
     }
 
-    public Integer getUserId() {
-        return userId;
+    public Episode getEpisode() {
+        return episode;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setEpisode(Episode episode) {
+        this.episode = episode;
     }
 
-    public Integer getEpisodeId() {
-        return episodeId;
+    public User getUser() {
+        return user;
     }
 
-    public void setEpisodeId(Integer episodeId) {
-        this.episodeId = episodeId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public String getWatchedDate() {
+    public Date getWatchedDate() {
         return watchedDate;
     }
 
-    public void setWatchedDate(String watchedDate) {
+    public void setWatchedDate(Date watchedDate) {
         this.watchedDate = watchedDate;
     }
 }

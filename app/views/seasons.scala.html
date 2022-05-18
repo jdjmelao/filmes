@@ -1,0 +1,55 @@
+@(seasons: Seq[models.Season], seasonForm: Form[forms.SeasonForm], serieId: Integer, title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
+
+@main(title) {
+  <h1>@title</h1>
+
+  @request.flash.asScala().get("fail").map { failFlashValue =>
+  <div class="alert alert-warning" role="alert">
+    <strong>Fail!</strong> @failFlashValue
+  </div>
+  }
+
+  <table>
+    <thead>
+    <tr>
+      <th>Season Number</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(a <- seasons) {
+    <tr>
+      <td><a href="@controllers.routes.HomeController.seasonid(a.getSerie().getId(), a.getId())">@a.getSeasonNumber()</a></td>
+    </tr>
+    }
+    </tbody>
+  </table>
+
+
+  @helper.form(action = routes.HomeController.addSeason()) {
+  @helper.CSRF.formField
+<div style="display: none;">
+  @helper.inputText(
+    seasonForm("serieId").copy(value=Some(serieId.toString))
+  )
+</div>
+  @helper.inputText(
+    seasonForm("seasonNumber"),
+    'type -> "number"
+  )
+  @helper.inputText(
+    seasonForm("total_duration_minutes"),
+    'type -> "number"
+  )
+  @helper.inputText(
+    seasonForm("number_of_episodes"),
+    'type -> "number"
+  )
+  @helper.inputDate(seasonForm("release_date"))
+  @helper.inputText(
+    seasonForm("classification"),
+    'type -> "number"
+  )
+  <button type="submit">Create Season</button>
+  }
+
+}

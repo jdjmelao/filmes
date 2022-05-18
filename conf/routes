@@ -7,7 +7,23 @@ GET     /                           controllers.HomeController.index(request: Re
 GET     /login                      controllers.HomeController.login(request: Request)
 GET     /signup                     controllers.HomeController.sign(request: Request)
 GET     /logout                     controllers.HomeController.logout(request: Request)
+GET     /series                     controllers.HomeController.series(request: Request)
+GET     /series/$serieId<[0-9]+>                     controllers.HomeController.serieid(request: Request, serieId: Integer)
+GET     /series/$serieId<[0-9]+>/seasons                     controllers.HomeController.seasons(request: Request, serieId: Integer)
+GET     /series/$serieId<[0-9]+>/seasons/$seasonId<[0-9]+>                     controllers.HomeController.seasonid(request: Request, serieId: Integer, seasonId: Integer)
+GET     /series/$serieId<[0-9]+>/seasons/$seasonId<[0-9]+>/episodes                     controllers.HomeController.episodes(request: Request, serieId: Integer, seasonId: Integer)
+GET     /series/$serieId<[0-9]+>/seasons/$seasonId<[0-9]+>/episodes/$episodeId<[0-9]+>                     controllers.HomeController.episodeid(request: Request, serieId: Integer, seasonId: Integer, episodeId: Integer)
 
+
+POST    /series/$serieId<[0-9]+>/seasons/$seasonId<[0-9]+>/episodes/$episodeId<[0-9]+>/delete                     controllers.HomeController.delete(request: Request, serieId: Integer, seasonId: Integer, episodeId: Integer)
+
+POST    /series/seasons/episodes                     controllers.HomeController.addEpisode(request: Request)
+
+POST    /series/seasons/                     controllers.HomeController.addSeason(request: Request)
+
+POST    /series                     controllers.HomeController.addSeries(request: Request)
+
+POST    /                           controllers.HomeController.addRecords(request: Request)
 
 POST    /login                      controllers.HomeController.log(request: Request)
 

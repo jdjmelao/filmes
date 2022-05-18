@@ -1,0 +1,56 @@
+@(series: Seq[models.Serie], serieForm: Form[forms.SerieForm], title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
+
+@main(title) {
+  <h1>@title</h1>
+
+  @request.flash.asScala().get("fail").map { failFlashValue =>
+  <div class="alert alert-warning" role="alert">
+    <strong>Fail!</strong> @failFlashValue
+  </div>
+  }
+
+  <table>
+    <thead>
+    <tr>
+      <th>Serie Name</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(a <- series) {
+    <tr>
+      <td><a href="@controllers.routes.HomeController.serieid(a.getId())">@a.getName()</a></td>
+    </tr>
+    }
+    </tbody>
+  </table>
+
+
+  @helper.form(action = routes.HomeController.addSeries()) {
+  @helper.CSRF.formField
+  @helper.inputText(
+    serieForm("name"),
+  )
+  @helper.inputText(
+    serieForm("number_of_seasons"),
+    'type -> "number"
+  )
+  @helper.inputText(
+    serieForm("number_of_episodes"),
+    'type -> "number"
+  )
+  @helper.inputText(
+    serieForm("category"),
+  )
+  @helper.inputText(
+    serieForm("total_duration_minutes"),
+    'type -> "number"
+  )
+  @helper.inputDate(serieForm("release_date"))
+  @helper.inputText(
+    serieForm("classification"),
+    'type -> "number"
+  )
+  <button type="submit">Create Serie</button>
+  }
+
+}

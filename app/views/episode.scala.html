@@ -1,0 +1,30 @@
+@(a: models.Episode, title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
+
+@main(title) {
+  <h1>@title</h1>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Serie Name</th>
+      <th>Season Number</th>
+      <th>Episode Number</th>
+      <th>Episode Name</th>
+      <th>Duration (Minutes)</th>
+      <th>Release Date</th>
+      <th>Classification</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>@a.getSeason().getSerie().getName()</td>
+      <td>@a.getSeason().getSeasonNumber()</td>
+      <td>@a.getEp_number()</td>
+      <td>@a.getName()</td>
+      <td>@a.getDuration_minutes()</td>
+      <td>@a.getRelease_date()</td>
+      <td>@a.getClassification()</td>
+    </tr>
+    </tbody>
+  </table>
+}

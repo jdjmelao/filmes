@@ -1,8 +1,20 @@
-@(aux: Seq[auxiliar.Auxiliar], title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
+@(aux: Seq[models.Records], series: Seq[models.Serie], recordForm: Form[forms.RecordForm], title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
 
 @main(title) {
   <h1>@title</h1>
   <span class="logout"><a href="/logout">Logout</a></span>
+
+  @request.flash.asScala().get("fail").map { failFlashValue =>
+  <div class="alert alert-warning" role="alert">
+    <strong>Fail!</strong> @failFlashValue
+  </div>
+  }
+
+  @request.flash.asScala().get("deleted").map { deleteFlash =>
+  <div class="alert alert-warning" role="alert">
+    <strong>Deleted!</strong> @deleteFlash
+  </div>
+  }
 
   <table>
     <thead>
@@ -11,17 +23,53 @@
       <th>Season Number</th>
       <th>Episode Number</th>
       <th>Episode Name</th>
+      <th>Delete</th>
     </tr>
     </thead>
     <tbody>
     @for(a <- aux) {
-    <tr>
-      <td>@a.getSerieName()</td>
-      <td>@a.getSeasonNumber()</td>
-      <td>@a.getEpisodeNumber()</td>
-      <td>@a.getEpisodeName()</td>
+    <tr class="list">
+      <td class="serie" >@a.getEpisode().getSeason().getSerie().getName()</td>
+      <td class="season" >@a.getEpisode().getSeason().getSeasonNumber()</td>
+      <td class="epNumber" >@a.getEpisode().getEp_number()</td>
+      <td class="epName" >@a.getEpisode().getName()</td>
+
+      <td>
+        @helper.form(action = routes.HomeController.delete(a.getEpisode().getSeason().getSerie().getId(), a.getEpisode().getSeason().getId(), a.getEpisode().getId())) {
+        @helper.CSRF.formField
+          <button class="delete" type="submit">Delete Last Episode</button>
+        }
+      </td>
+
     </tr>
     }
     </tbody>
   </table>
+
+
+  @helper.form(action = routes.HomeController.addRecords()) {
+  @helper.CSRF.formField
+  @helper.select(
+  field = recordForm("serieName"),
+  options = series.map(serie => serie.getName() -> serie.getName()),
+  'class -> "serieName"
+  )
+  @helper.inputText(
+    recordForm("seasonNumber"),
+    'type -> "number",
+    'class -> "seasonNumber"
+  )
+  @helper.inputText(
+    recordForm("episodeNumber"),
+    'type -> "number",
+    'class -> "episodeNumber"
+  )
+  @helper.inputDate(
+    recordForm("watchedDate"),
+    'class -> "watchedDate"
+)
+  <button type="submit" class="create">Create Record</button>
+  }
+
+
 }
