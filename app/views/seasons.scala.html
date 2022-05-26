@@ -16,11 +16,11 @@
     </tr>
     </thead>
     <tbody>
+    <tr class="list">
     @for(a <- seasons) {
-    <tr>
       <td><a href="@controllers.routes.HomeController.seasonid(a.getSerie().getId(), a.getId())">@a.getSeasonNumber()</a></td>
-    </tr>
     }
+    </tr>
     </tbody>
   </table>
 
@@ -31,25 +31,21 @@
   @helper.inputText(
     seasonForm("serieId").copy(value=Some(serieId.toString))
   )
+
 </div>
   @helper.inputText(
     seasonForm("seasonNumber"),
-    'type -> "number"
+    'type -> "number",
+    'class -> "seasonNumber"
   )
-  @helper.inputText(
-    seasonForm("total_duration_minutes"),
-    'type -> "number"
-  )
-  @helper.inputText(
-    seasonForm("number_of_episodes"),
-    'type -> "number"
-  )
-  @helper.inputDate(seasonForm("release_date"))
+  @helper.inputDate(seasonForm("release_date"),
+'class -> "date")
   @helper.inputText(
     seasonForm("classification"),
-    'type -> "number"
+    'type -> "number",
+'class -> "classification"
   )
-  <button type="submit">Create Season</button>
+  <button type="submit" class="create">Create Season</button>
   }
 
 }

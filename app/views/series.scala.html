@@ -16,11 +16,11 @@
     </tr>
     </thead>
     <tbody>
+    <tr class="series">
     @for(a <- series) {
-    <tr>
       <td><a href="@controllers.routes.HomeController.serieid(a.getId())">@a.getName()</a></td>
-    </tr>
     }
+    </tr>
     </tbody>
   </table>
 
@@ -29,28 +29,20 @@
   @helper.CSRF.formField
   @helper.inputText(
     serieForm("name"),
-  )
-  @helper.inputText(
-    serieForm("number_of_seasons"),
-    'type -> "number"
-  )
-  @helper.inputText(
-    serieForm("number_of_episodes"),
-    'type -> "number"
+    'class -> "name"
   )
   @helper.inputText(
     serieForm("category"),
+    'class -> "category"
   )
-  @helper.inputText(
-    serieForm("total_duration_minutes"),
-    'type -> "number"
-  )
-  @helper.inputDate(serieForm("release_date"))
+  @helper.inputDate(serieForm("release_date"),
+'class -> "date")
   @helper.inputText(
     serieForm("classification"),
+    'class -> "classification",
     'type -> "number"
   )
-  <button type="submit">Create Serie</button>
+  <button type="submit" class="create">Create Serie</button>
   }
 
 }

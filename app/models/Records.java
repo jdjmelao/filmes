@@ -37,6 +37,14 @@ public class Records extends Model {
         return finder.query().where().and(Expr.eq( "user.id", id ), Expr.eq( "episode.season.serie.id", serieId )).orderBy("episode.season.seasonNumber desc, episode.ep_number desc").setMaxRows(1).findOne();
     }
 
+    public static Records getLastFromUser(Integer userId){
+        int i = finder.query().where(Expr.eq( "user.id", userId)).findList().size();
+        if(i != 0){
+            return finder.query().where(Expr.eq( "user.id", userId)).findList().get(i-1);
+        }
+        return null;
+    }
+
     public static List<Records> getLastRecords(Integer id){
         List<Records> result = new ArrayList<>();
         List<Records> records = getRecords(id);

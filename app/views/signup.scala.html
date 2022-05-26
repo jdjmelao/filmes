@@ -13,9 +13,13 @@
 
     @helper.form(action = routes.HomeController.signup()) {
         @helper.CSRF.formField
-        @helper.inputText(userForm("user"))
-        @helper.inputPassword(userForm("password"))
-        <button type="submit">Create widget</button>
+        @helper.inputText(userForm("user"),
+                            'class -> "user",
+                            'id -> "user")
+        @helper.inputPassword(userForm("password"),
+                            'class -> "password",
+                            'id -> "password")
+        <button type="submit" class="create" >Create widget</button>
     }
 
 

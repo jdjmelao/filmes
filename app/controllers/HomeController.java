@@ -9,17 +9,13 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.libs.concurrent.HttpExecutionContext;
-import scala.collection.immutable.Seq;
 import views.html.index;
 
 import javax.inject.Inject;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 import static play.libs.Scala.asScala;
 
@@ -60,6 +56,7 @@ public class HomeController extends Controller {
         }
         catch(Exception e){
             System.out.println("Not logged");
+            return redirect(controllers.routes.HomeController.login());
         }
 
         List<Records> finalEps = eps;
@@ -163,20 +160,32 @@ public class HomeController extends Controller {
             Form<RecordForm> form = this.formFactory.form(RecordForm.class).bindFromRequest(request);
             RecordForm recordFormData = form.get();
 
-            Records r = new Records();
+
 
             Serie serie = Serie.checkSerie(recordFormData.getSerieName());
             Season season = Season.getSeasonFromSerie(serie.getId(), Integer.valueOf(recordFormData.getSeasonNumber()));
             Episode episode = Episode.getEpisodeFromSeason(season.getId(), Integer.valueOf(recordFormData.getEpisodeNumber()));
 
+            if (episode == null) {
+                System.out.println("Error adding Episode");
+                return redirect(controllers.routes.HomeController.index())
+                        .flashing("fail", "Error adding episode.");
+            }
             Date date = new SimpleDateFormat("yyyy-MM-dd").parse(recordFormData.getWatchedDate());
 
             System.out.println(date);
 
-            r.setWatchedDate(date);
-            r.setUser(User.checkById(Integer.valueOf(id))); //set user by id
-            r.setEpisode(episode);
 
+            Records r = null;
+            if(Records.getRecord(Integer.valueOf(id), episode.getId()) != null){
+                r = Records.getRecord(Integer.valueOf(id), episode.getId());
+                r.setWatchedDate(date);
+            }
+            else {
+                r.setWatchedDate(date);
+                r.setUser(User.checkById(Integer.valueOf(id))); //set user by id
+                r.setEpisode(episode);
+            }
             r.save();
 
             return redirect(controllers.routes.HomeController.index());
@@ -200,10 +209,10 @@ public class HomeController extends Controller {
 
 
             s.setName(serieFormData.getName());
-            s.setNumber_of_seasons(Integer.valueOf(serieFormData.getNumber_of_seasons()));
-            s.setNumber_of_episodes(Integer.valueOf(serieFormData.getNumber_of_episodes()));
+            s.setNumber_of_seasons(0);
+            s.setNumber_of_episodes(0);
             s.setCategory(serieFormData.getCategory());
-            s.setTotal_duration_minutes(Integer.valueOf(serieFormData.getTotal_duration_minutes()));
+            s.setTotal_duration_minutes(0);
             s.setRelease_date(date);
             s.setClassification(Integer.valueOf(serieFormData.getClassification()));
 
@@ -226,25 +235,21 @@ public class HomeController extends Controller {
             Form<SeasonForm> form = this.formFactory.form(SeasonForm.class).bindFromRequest(request);
             SeasonForm seasonFormData = form.get();
 
-            System.out.println("Hey");
-
             Serie serie = Serie.getSerieById(seasonFormData.getSerieId());
-            System.out.println("Hey2");
             Season s = new Season();
-            System.out.println("Hey3");
             Date date = new SimpleDateFormat("yyyy-MM-dd").parse(seasonFormData.getRelease_date());
-            System.out.println("Hey4");
 
             s.setSerie(serie);
             s.setSeasonNumber(Integer.valueOf(seasonFormData.getSeasonNumber()));
-            s.setNumber_of_episodes(Integer.valueOf(seasonFormData.getNumber_of_episodes()));
-            s.setTotal_duration_minutes(Integer.valueOf(seasonFormData.getTotal_duration_minutes()));
+            s.setNumber_of_episodes(0);
+            s.setTotal_duration_minutes(0);
             s.setRelease_date(date);
             s.setClassification(Integer.valueOf(seasonFormData.getClassification()));
 
-            System.out.println("Hey5");
             s.save();
-            System.out.println("Hey6");
+
+            serie.setNumber_of_seasons(serie.getNumber_of_seasons() + 1);
+            serie.save();
 
             return redirect(controllers.routes.HomeController.seasons(serie.getId()));
 
@@ -273,6 +278,14 @@ public class HomeController extends Controller {
             s.setName(episodeFormData.getName());
             s.setClassification(Integer.valueOf(episodeFormData.getClassification()));
 
+            season.setTotal_duration_minutes(season.getTotal_duration_minutes() + Integer.valueOf(episodeFormData.getDuration_minutes()));
+            season.setNumber_of_episodes(season.getNumber_of_episodes() + 1);
+            season.save();
+
+            Serie serie = Serie.getSerieById(episodeFormData.getSerieId());
+            serie.setTotal_duration_minutes(serie.getTotal_duration_minutes() + Integer.valueOf(episodeFormData.getDuration_minutes()));
+            serie.setNumber_of_episodes(serie.getNumber_of_episodes() + 1);
+            serie.save();
 
             s.save();
 

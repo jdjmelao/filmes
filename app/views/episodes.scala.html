@@ -12,10 +12,10 @@
   <table>
     <thead>
     <tr>
-      <th>Episode Number</th>
+      <th>Episode Name</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody class="list">
     @for(a <- episodes) {
     <tr>
       <td><a href="@controllers.routes.HomeController.episodeid(a.getSeason().getSerie().getId(), a.getSeason().getId(), a.getId())">@a.getName()</a></td>
@@ -36,24 +36,30 @@
     episodeForm("seasonNumber").copy(value=Some(seasonNumber.toString)),
     'type -> "number"
   )
-</div>
   @helper.inputText(
-    episodeForm("ep_number"),
-    'type -> "number"
+  episodeForm("ep_number").copy(value=Some((episodes.size + 1).toString)),
+  'type -> "number",
+  'class -> "epNumber"
   )
+</div>
+
   @helper.inputText(
-    episodeForm("name")
+    episodeForm("name"),
+'class -> "name"
   )
   @helper.inputText(
     episodeForm("duration_minutes"),
-    'type -> "number"
+    'type -> "number",
+'class -> "duration"
   )
-  @helper.inputDate(episodeForm("release_date"))
+  @helper.inputDate(episodeForm("release_date"),
+'class -> "release_date")
   @helper.inputText(
     episodeForm("classification"),
-    'type -> "number"
+    'type -> "number",
+'class -> "classification"
   )
-  <button type="submit">Create Episode</button>
+  <button type="submit" class="create">Create Episode</button>
   }
 
 }

@@ -30,6 +30,14 @@ public class HomeControllerTest extends WithApplication {
     }
 
     @Test
+    public void testLoginRedirect() {
+        Http.RequestBuilder request = Helpers.fakeRequest(routes.HomeController.index());
+
+        Result result = route(app, request);
+        assertEquals(303, result.status());
+    }
+
+    @Test
     public void testUser() {
         User macintosh = User.checkById(1);
         assertEquals("123", macintosh.getUser());

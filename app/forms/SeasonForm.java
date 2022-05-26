@@ -10,10 +10,6 @@ public class SeasonForm {
 
     private Integer seasonNumber;
 
-    private Integer total_duration_minutes;
-
-    private Integer number_of_episodes;
-
     private String release_date;
 
     private Integer classification;
@@ -22,7 +18,7 @@ public class SeasonForm {
         return serieId;
     }
 
-    public void setSerieName(Integer serieId) {
+    public void setSerieId(Integer serieId) {
         this.serieId = serieId;
     }
 
@@ -32,22 +28,6 @@ public class SeasonForm {
 
     public void setSeasonNumber(Integer seasonNumber) {
         this.seasonNumber = seasonNumber;
-    }
-
-    public Integer getTotal_duration_minutes() {
-        return total_duration_minutes;
-    }
-
-    public void setTotal_duration_minutes(Integer total_duration_minutes) {
-        this.total_duration_minutes = total_duration_minutes;
-    }
-
-    public Integer getNumber_of_episodes() {
-        return number_of_episodes;
-    }
-
-    public void setNumber_of_episodes(Integer number_of_episodes) {
-        this.number_of_episodes = number_of_episodes;
     }
 
     public String getRelease_date() {
