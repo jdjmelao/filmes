@@ -14,5 +14,4 @@ libraryDependencies ++= Seq(
   javaJdbc,
   // MySQL driver
   "mysql" % "mysql-connector-java" % "8.0.29",
-
 )

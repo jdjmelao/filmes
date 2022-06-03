@@ -1,8 +1,9 @@
 @(aux: Seq[models.Records], series: Seq[models.Serie], recordForm: Form[forms.RecordForm], title: String)(implicit request: Http.Request, messages: play.i18n.Messages)
 
 @main(title) {
-  <h1>@title</h1>
+  <h1 class="title">@title</h1>
   <span class="logout"><a href="/logout">Logout</a></span>
+  <span class="series"><a href="/series">All Series</a></span>
 
   @request.flash.asScala().get("fail").map { failFlashValue =>
   <div class="alert alert-warning" role="alert">
@@ -45,6 +46,49 @@
     }
     </tbody>
   </table>
+<button class="javascript">Appear</button>
+<h3 class="divResult"></h3>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script>
+    var serieName = "Breaking Bad";
+    var watchedDate = "09/09/2200";
+    var seasonNumber = "2";
+    var episodeNumber = "1";
+
+    jsonObj = [];
+    item = {}
+    item["serieName"] = serieName;
+    item["watchedDate"] = watchedDate;
+    item["seasonNumber"] = seasonNumber;
+    item["episodeNumber"] = episodeNumber;
+
+    jsonObj.push(item);
+
+    console.log(jsonObj)
+
+    var resultElement = document.querySelector(".divResult");
+    var serviceURL = "http://localhost:8080/records";
+
+    document.querySelector(".javascript").onclick = function() {
+    $.ajax({
+                type:'POST',
+                url: serviceURL,
+                data: item, //data sent to server
+                success: function(data){
+                        alert(data);
+                },
+                error: function(textStatus){
+                  console.log(textStatus);
+                  arr = $.parseJSON(textStatus); //convert to javascript array
+                  $.each(arr,function(key,value){
+                    alert(value);
+                  });
+                }
+        });
+    }
+  </script>
+</script>
+
 
 
   @helper.form(action = routes.HomeController.addRecords()) {

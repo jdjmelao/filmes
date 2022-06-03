@@ -25,6 +25,8 @@ POST    /series                     controllers.HomeController.addSeries(request
 
 POST    /                           controllers.HomeController.addRecords(request: Request)
 
+POST    /records                    controllers.HomeController.addRecordsAjax(request: Request)
+
 POST    /login                      controllers.HomeController.log(request: Request)
 
 POST    /signup                     controllers.HomeController.signup(request: Request)

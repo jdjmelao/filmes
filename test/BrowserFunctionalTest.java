@@ -5,15 +5,18 @@ import models.Serie;
 import models.User;
 import org.fluentlenium.core.domain.FluentWebElement;
 import org.junit.Test;
+import play.mvc.Http;
+import play.mvc.Result;
+import play.test.Helpers;
 import play.test.WithBrowser;
-
+import static org.junit.Assert.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+
 import static play.test.Helpers.route;
 
 public class BrowserFunctionalTest extends WithBrowser {
@@ -21,12 +24,26 @@ public class BrowserFunctionalTest extends WithBrowser {
     @Test
     public void loginWorks() {
         browser.goTo(routes.HomeController.login().toString());
-        //assertEquals(OK, browser);
-
         browser.$("#password").fill().with("123");
         browser.$("#user").fill().with("123");
         browser.$(".create").submit();
+        String script = new String("getIsto();");
+        String code = browser.el(".statusCode").text();
+        assertEquals("200", code);
         assertEquals("Hello", browser.el("title").text());
+    }
+
+    @Test
+    public void loginIsCaseSensitive() {
+        browser.goTo(routes.HomeController.login().toString());
+        //assertEquals(OK, browser);
+
+        browser.$("#password").fill().with("ABC");
+        browser.$("#user").fill().with("abc");
+        browser.$(".create").submit();
+        assertEquals("Login", browser.el("title").text());
+        String html = browser.pageSource();
+        assertFalse("Fail should be on the Page", html.contains("Fail"));
     }
 
     @Test
@@ -70,7 +87,7 @@ public class BrowserFunctionalTest extends WithBrowser {
         login.put("user", "123");
         my_dict.put("serieName", "Breaking Bad");
         my_dict.put("seasonNumber", "1");
-        my_dict.put("episodeNumber", "3");
+        my_dict.put("episodeNumber", "2");
         my_dict.put("watchedDate", date);
 
 
@@ -435,9 +452,16 @@ public class BrowserFunctionalTest extends WithBrowser {
 
     }
 
+    @Test
+    public void canClickTitle(){
+        login("123", "123");
+        boolean isClickable = browser.el("title").clickable();
+        assertEquals("Hello", browser.el("title").text());
+        assertFalse(isClickable);
+    }
+
     public void login(String user, String pass){
         browser.goTo(routes.HomeController.login().toString());
-        System.out.println(pass + user);
         browser.$("#password").fill().with(pass);
         browser.$("#user").fill().with(user);
         browser.$(".create").submit();

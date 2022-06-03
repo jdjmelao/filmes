@@ -20,5 +20,20 @@
         @content
 
         <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
+        <h3 class="statusCode" style="display: none;">Oi!</h3>
+        <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+        <script>
+    function xhrRequest(){
+               document.querySelector(".statusCode").innerHTML = this.status;
+            }
+    function getReq(url){
+                var oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", xhrRequest);
+                oReq.open("GET", url);
+                oReq.send();
+            }
+    var x = window.location.href;
+    getReq(x);
+</script>
     </body>
 </html>

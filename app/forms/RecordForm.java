@@ -5,6 +5,10 @@ public class RecordForm {
 
     public String seasonNumber;
 
+    public String serieName;
+
+    public String watchedDate;
+
     public String getSeasonNumber() {
         return seasonNumber;
     }
@@ -12,10 +16,6 @@ public class RecordForm {
     public void setSeasonNumber(String seasonNumber) {
         this.seasonNumber = seasonNumber;
     }
-
-    public String serieName;
-
-    public String watchedDate;
 
     public String getEpisodeNumber() {
         return episodeNumber;

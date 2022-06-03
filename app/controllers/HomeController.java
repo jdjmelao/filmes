@@ -5,6 +5,7 @@ import models.*;
 import play.data.Form;
 import play.data.FormFactory;
 import play.i18n.MessagesApi;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -12,6 +13,7 @@ import play.libs.concurrent.HttpExecutionContext;
 import views.html.index;
 
 import javax.inject.Inject;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -154,6 +156,50 @@ public class HomeController extends Controller {
                 .addingToSession(request, "id", String.valueOf(id));
     }
 
+    public Result addRecordsAjax(Http.Request request) {
+        String id = String.valueOf(request.session().get("id")).replace("Optional[", "").replace("]", "");
+        Form<RecordForm> form = this.formFactory.form(RecordForm.class).bindFromRequest(request);
+        RecordForm recordFormData = form.get();
+
+        if (recordFormData.getEpisodeNumber() == null || recordFormData.getSeasonNumber() == null || recordFormData.getSerieName() == null || recordFormData.getWatchedDate() == null) {
+            return badRequest(Json.toJson("{\"id\": \"1\"}")).as(Http.MimeTypes.JSON);
+        }
+
+        Serie serie = Serie.checkSerie(recordFormData.getSerieName());
+        Season season = Season.getSeasonFromSerie(serie.getId(), Integer.valueOf(recordFormData.getSeasonNumber()));
+        Episode episode = Episode.getEpisodeFromSeason(season.getId(), Integer.valueOf(recordFormData.getEpisodeNumber()));
+        if (episode == null) {
+            System.out.println("Error adding Episode");
+            return badRequest(Json.toJson(recordFormData)).as(Http.MimeTypes.JSON)
+                    .flashing("fail", "Error adding episode.");
+        }
+        Date date = null;
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd").parse(recordFormData.getWatchedDate());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println(date);
+
+
+        Records r = null;
+        if(Records.getRecord(Integer.valueOf(id), episode.getId()) != null){
+            r = Records.getRecord(Integer.valueOf(id), episode.getId());
+            r.setWatchedDate(date);
+        }
+        else {
+            r = new Records();
+            r.setWatchedDate(date);
+            r.setUser(User.checkById(Integer.valueOf(id))); //set user by id
+            r.setEpisode(episode);
+        }
+        r.save();
+
+        return ok(Json.toJson(recordFormData)).as(Http.MimeTypes.JSON);
+    }
+
+
     public Result addRecords(Http.Request request) {
         try {
             String id = String.valueOf(request.session().get("id")).replace("Optional[", "").replace("]", "");
@@ -165,7 +211,6 @@ public class HomeController extends Controller {
             Serie serie = Serie.checkSerie(recordFormData.getSerieName());
             Season season = Season.getSeasonFromSerie(serie.getId(), Integer.valueOf(recordFormData.getSeasonNumber()));
             Episode episode = Episode.getEpisodeFromSeason(season.getId(), Integer.valueOf(recordFormData.getEpisodeNumber()));
-
             if (episode == null) {
                 System.out.println("Error adding Episode");
                 return redirect(controllers.routes.HomeController.index())
@@ -182,6 +227,7 @@ public class HomeController extends Controller {
                 r.setWatchedDate(date);
             }
             else {
+                r = new Records();
                 r.setWatchedDate(date);
                 r.setUser(User.checkById(Integer.valueOf(id))); //set user by id
                 r.setEpisode(episode);
@@ -197,6 +243,9 @@ public class HomeController extends Controller {
                     .flashing("fail", "Error adding episode.");
         }
     }
+
+
+
 
     public Result addSeries(Http.Request request) {
         try {
