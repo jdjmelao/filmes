@@ -14,4 +14,5 @@ libraryDependencies ++= Seq(
   javaJdbc,
   // MySQL driver
   "mysql" % "mysql-connector-java" % "8.0.29",
+  "net.aichler" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test,
 )

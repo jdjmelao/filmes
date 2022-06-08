@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static play.libs.Scala.asScala;
 
@@ -156,13 +157,14 @@ public class HomeController extends Controller {
                 .addingToSession(request, "id", String.valueOf(id));
     }
 
-    public Result addRecordsAjax(Http.Request request) {
+    public Result addRecordsAjax(Http.Request request) throws InterruptedException {
+        TimeUnit.SECONDS.sleep(20);
         String id = String.valueOf(request.session().get("id")).replace("Optional[", "").replace("]", "");
         Form<RecordForm> form = this.formFactory.form(RecordForm.class).bindFromRequest(request);
         RecordForm recordFormData = form.get();
 
         if (recordFormData.getEpisodeNumber() == null || recordFormData.getSeasonNumber() == null || recordFormData.getSerieName() == null || recordFormData.getWatchedDate() == null) {
-            return badRequest(Json.toJson("{\"id\": \"1\"}")).as(Http.MimeTypes.JSON);
+            return badRequest(Json.toJson("{\"Error\": \"Need more info!\"}")).as(Http.MimeTypes.JSON);
         }
 
         Serie serie = Serie.checkSerie(recordFormData.getSerieName());
@@ -196,7 +198,7 @@ public class HomeController extends Controller {
         }
         r.save();
 
-        return ok(Json.toJson(recordFormData)).as(Http.MimeTypes.JSON);
+        return ok(Json.toJson(r)).as(Http.MimeTypes.JSON);
     }
 
 

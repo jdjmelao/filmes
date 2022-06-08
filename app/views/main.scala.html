@@ -20,15 +20,15 @@
         @content
 
         <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
-        <h3 class="statusCode" style="display: none;">Oi!</h3>
+        <div class="statusCode" style="display: none;"></div>
         <script src="https://code.jquery.com/jquery-latest.min.js"></script>
         <script>
-    function xhrRequest(){
-               document.querySelector(".statusCode").innerHTML = this.status;
-            }
     function getReq(url){
                 var oReq = new XMLHttpRequest();
-                oReq.addEventListener("load", xhrRequest);
+                oReq.addEventListener("load", function() {
+                    document.querySelector(".statusCode").innerHTML += '<p class="' + url.replace("http://127.0.0.1:9000", "") + '">' + this.status + '</p>';
+                });
+                //(url.replace("http://127.0.0.1:9000", ""))
                 oReq.open("GET", url);
                 oReq.send();
             }

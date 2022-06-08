@@ -49,44 +49,69 @@
 <button class="javascript">Appear</button>
 <h3 class="divResult"></h3>
 <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-  <script>
-    var serieName = "Breaking Bad";
-    var watchedDate = "09/09/2200";
-    var seasonNumber = "2";
-    var episodeNumber = "1";
+<script>
 
-    jsonObj = [];
-    item = {}
-    item["serieName"] = serieName;
-    item["watchedDate"] = watchedDate;
-    item["seasonNumber"] = seasonNumber;
-    item["episodeNumber"] = episodeNumber;
-
-    jsonObj.push(item);
-
-    console.log(jsonObj)
-
-    var resultElement = document.querySelector(".divResult");
-    var serviceURL = "http://localhost:8080/records";
 
     document.querySelector(".javascript").onclick = function() {
-    $.ajax({
-                type:'POST',
-                url: serviceURL,
-                data: item, //data sent to server
-                success: function(data){
-                        alert(data);
-                },
-                error: function(textStatus){
-                  console.log(textStatus);
-                  arr = $.parseJSON(textStatus); //convert to javascript array
-                  $.each(arr,function(key,value){
-                    alert(value);
-                  });
-                }
-        });
+      var serieName = document.querySelector(".serieName").value;
+      var watchedDate = document.querySelector(".watchedDate").value;
+      var seasonNumber = document.querySelector(".seasonNumber").value;
+      var episodeNumber = document.querySelector(".episodeNumber").value;
+
+      jsonObj = [];
+      item = {};
+      item["serieName"] = serieName;
+      item["watchedDate"] = watchedDate;
+      item["seasonNumber"] = seasonNumber;
+      item["episodeNumber"] = episodeNumber;
+
+      jsonObj.push(item);
+
+      console.log(jsonObj);
+
+      var resultElement = document.querySelector(".divResult");
+      var serviceURL = "/records";
     }
-  </script>
+$.ajax({
+          beforeSend: function(request) {
+              request.setRequestHeader("Csrf-Token", $('input[name="csrfToken"]').attr('value'));
+          },
+          type:'POST',
+          url: serviceURL,
+          data: item, //data sent to server
+          success: function(data){
+                  elementList = document.querySelectorAll(".list");
+                  var flag = false;
+                  console.log(document.querySelector(".serie").innerHTML);
+                  for (let i = 0; i < elementList.length; i++) {
+                    if(elementList[i].querySelector(".serie").innerHTML == serieName){
+                      console.log(data);
+                      flag = true;
+                      elementList[i].querySelector(".season").innerHTML = data.episode.season.seasonNumber;
+                      elementList[i].querySelector(".epNumber").innerHTML = data.episode.ep_number;
+                      elementList[i].querySelector(".epName").innerHTML = data.episode.name;
+                    }
+                  }
+
+                 if(flag == false){
+                    var h = `
+                    <tr class="list">
+                      <td class="serie" >${serieName}</td>
+                      <td class="season" >${data.episode.season.seasonNumber}</td>
+                      <td class="epNumber" >${data.episode.ep_number}</td>
+                      <td class="epName" >${data.episode.name}</td>
+
+
+                    </tr>`;
+                    document.querySelector("tbody").innerHTML = h + document.querySelector("tbody").innerHTML;
+                  }
+          },
+          error: function(textStatus){
+
+            alert("Episode does not exist");
+          }
+});
+
 </script>
 
 
