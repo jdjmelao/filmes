@@ -158,7 +158,7 @@ public class HomeController extends Controller {
     }
 
     public Result addRecordsAjax(Http.Request request) throws InterruptedException {
-        TimeUnit.SECONDS.sleep(20);
+        //TimeUnit.SECONDS.sleep(20);
         String id = String.valueOf(request.session().get("id")).replace("Optional[", "").replace("]", "");
         Form<RecordForm> form = this.formFactory.form(RecordForm.class).bindFromRequest(request);
         RecordForm recordFormData = form.get();

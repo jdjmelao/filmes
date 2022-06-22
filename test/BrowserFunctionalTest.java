@@ -3,6 +3,7 @@ import models.Episode;
 import models.Records;
 import models.Serie;
 import models.User;
+import org.fluentlenium.configuration.FluentConfiguration;
 import org.fluentlenium.core.domain.FluentWebElement;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
@@ -16,6 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.jupiter.api.*;
@@ -25,6 +28,8 @@ import org.junit.jupiter.api.Order;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BrowserFunctionalTest extends WithBrowser {
 
+
+
     @Test
     @Order(1)
     public void AloginWorks() {
@@ -32,11 +37,10 @@ public class BrowserFunctionalTest extends WithBrowser {
         System.out.println(browser.pageSource());
         browser.$("#password").fill().with("123");
         browser.$("#user").fill().with("123");
-        browser.$(".create").submit();
-        String code = browser.el(".statusCode").text();
-        //assertEquals("200", code);
+        browser.$("button").submit();
         assertEquals("Hello", browser.el("title").text());
     }
+
 
     @Test
     @Order(2)
@@ -65,18 +69,28 @@ public class BrowserFunctionalTest extends WithBrowser {
     @Test
     @Order(4)
     public void DcreateAccountGood() {
-        browser.goTo(routes.HomeController.signup().toString());
+        try {
+            browser.goTo(routes.HomeController.signup().toString());
 
-        browser.$(".password").fill().with("novo");
-        browser.$(".user").fill().with("novo");
-        browser.$(".create").submit();
+            browser.$(".password").fill().with("novo");
+            browser.$(".user").fill().with("novo");
+            browser.$(".create").submit();
 
-        assertEquals("Hello", browser.el("title").text());
+            assertEquals("Hello", browser.el("title").text());
 
-        User user = User.checkUser("novo").get(0);
-        assertEquals("novo", user.getUser());
+            User user = User.checkUser("novo").get(0);
+            assertEquals("novo", user.getUser());
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+        finally {
+            User user = User.checkUser("novo").get(0);
+            user.delete();
+        }
 
-        user.delete();
+
+
 
     }
 
@@ -105,7 +119,6 @@ public class BrowserFunctionalTest extends WithBrowser {
         browser.$(".seasonNumber").fill().with(my_dict.get("seasonNumber"));
         browser.$(".episodeNumber").fill().with(my_dict.get("episodeNumber"));
         browser.$(".watchedDate").fill().with(my_dict.get("watchedDate"));
-
 
         browser.$(".create").submit();
 
@@ -347,7 +360,7 @@ public class BrowserFunctionalTest extends WithBrowser {
         login.put("user", "123");
         my_dict.put("serieName", "Breaking Bad");
         my_dict.put("seasonNumber", "1");
-        my_dict.put("episodeNumber", "2");
+        my_dict.put("episodeNumber", "3");
         my_dict.put("watchedDate", date);
 
 
@@ -362,6 +375,15 @@ public class BrowserFunctionalTest extends WithBrowser {
 
 
         browser.$(".javascript").click();
+
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        browser.goTo(browser.getBaseUrl());
+        System.out.println(browser.getBaseUrl());
 
         FluentWebElement s = browser.$(".list").get(0);
         String title = s.el(".serie").text();
@@ -379,13 +401,116 @@ public class BrowserFunctionalTest extends WithBrowser {
         System.out.println(r.getEpisode().getName());
         assertEquals(r.getEpisode().getName(), epName);
 
+        assertEquals(title, my_dict.get("serieName"));
+        assertEquals(season, my_dict.get("seasonNumber"));
+        assertEquals(ep, my_dict.get("episodeNumber"));
+
+        browser.$(".delete").get(0).click();
+    }
+
+
+    @Test
+    @Order(12)
+    public void KbinjectAjax() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String date = LocalDate.now().format(formatter);
+
+        Hashtable<String, String> my_dict = new Hashtable<String, String>();
+        Hashtable<String, String> login = new Hashtable<String, String>();
+
+        login.put("password", "123");
+        login.put("user", "123");
+        my_dict.put("serieName", "Breaking Bad");
+        my_dict.put("seasonNumber", "1");
+        my_dict.put("episodeNumber", "2");
+        my_dict.put("watchedDate", date);
+
+
+        login(login.get("user"), login.get("password"));
+        assertEquals("Hello", browser.el("title").text());
+
+        String script = "var serieName = \"" + my_dict.get("serieName") + "\";\n" +
+                "  var watchedDate = \"" + my_dict.get("watchedDate") + "\";\n" +
+                "  var seasonNumber = \"" + my_dict.get("seasonNumber") + "\";\n" +
+                "  var episodeNumber = \"" + my_dict.get("episodeNumber") + "\";\n" +
+                "\n" +
+                "  jsonObj = [];\n" +
+                "  item = {};\n" +
+                "  item[\"serieName\"] = serieName;\n" +
+                "  item[\"watchedDate\"] = watchedDate;\n" +
+                "  item[\"seasonNumber\"] = seasonNumber;\n" +
+                "  item[\"episodeNumber\"] = episodeNumber;\n" +
+                "\n" +
+                "  jsonObj.push(item);\n" +
+                "\n" +
+                "  console.log(jsonObj);\n" +
+                "\n" +
+                "  var resultElement = document.querySelector(\".divResult\");\n" +
+                "  var serviceURL = \"/records\";\n" +
+                "\n" +
+                "  $.ajax({\n" +
+                "  beforeSend: function(request) {\n" +
+                "      request.setRequestHeader(\"Csrf-Token\", $('input[name=\"csrfToken\"]').attr('value'));\n" +
+                "  },\n" +
+                "  type:'POST',\n" +
+                "  url: serviceURL,\n" +
+                "  data: item, //data sent to server\n" +
+                "  success: function(data){\n" +
+                "          elementList = document.querySelectorAll(\".list\");\n" +
+                "          var flag = false;\n" +
+                "          for (let i = 0; i < elementList.length; i++) {\n" +
+                "            if(elementList[i].querySelector(\".serie\").innerHTML == serieName){\n" +
+                "              console.log(data);\n" +
+                "              flag = true;\n" +
+                "              elementList[i].querySelector(\".season\").innerHTML = data.episode.season.seasonNumber;\n" +
+                "              elementList[i].querySelector(\".epNumber\").innerHTML = data.episode.ep_number;\n" +
+                "              elementList[i].querySelector(\".epName\").innerHTML = data.episode.name;\n" +
+                "            }\n" +
+                "          }\n" +
+                "\n" +
+                "         if(flag == false){\n" +
+                "            var h = '<tr class=\"list\"><td class=\"serie\" >${serieName}</td><td class=\"season\" >${data.episode.season.seasonNumber}</td><td class=\"epNumber\" >${data.episode.ep_number}</td><td class=\"epName\" >${data.episode.name}</td></tr>';\n" +
+                "            document.querySelector(\"tbody\").innerHTML = h + document.querySelector(\"tbody\").innerHTML;\n" +
+                "         }\n" +
+                "      },\n" +
+                "      error: function(textStatus){\n" +
+                "        alert(\"Episode does not exist\");\n" +
+                "      }\n" +
+                "  });";
+
+        browser.executeScript(script);
+
+
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        browser.goTo(browser.getBaseUrl());
+
+
+        FluentWebElement s = browser.$(".list").get(0);
+        String title = s.el(".serie").text();
+        String season = s.el(".season").text();
+        String ep = s.el(".epNumber").text();
+        String epName = s.el(".epName").text();
+
+        System.out.println(title + season + ep + epName);
+
+
+
+        User user = User.checkUser(login.get("user")).get(0);
+        System.out.println(user.getUser());
+        Records r = Records.getLastFromUser(user.getId());
         System.out.println(r.getEpisode().getName());
+        assertEquals(r.getEpisode().getName(), epName);
 
         assertEquals(title, my_dict.get("serieName"));
         assertEquals(season, my_dict.get("seasonNumber"));
         assertEquals(ep, my_dict.get("episodeNumber"));
 
-        //browser.$(".delete").get(0).click();
+        browser.$(".delete").get(0).click();
     }
 
     @Test
@@ -536,7 +661,7 @@ public class BrowserFunctionalTest extends WithBrowser {
         browser.goTo(routes.HomeController.login().toString());
         browser.$("#password").fill().with(pass);
         browser.$("#user").fill().with(user);
-        browser.$(".create").submit();
+        browser.$("button").submit();
     }
 
 
